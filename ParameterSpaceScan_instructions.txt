@@ -1,0 +1,63 @@
+This document will explain how to dowload, configure, and run a parameter space search for AraSim on a computing cluster. 
+These scripts explore the AraSim parameter space by varying the values for 5 parameters in the setup.txt file. 
+
+#######Script Descriptions########
+ParamSearchSetup.sh -> This script sets up the necessary directories and setup files for all the runs
+scheduler.sh -> This script submits and monitors all jobs.  
+
+#######DOWNLOAD########
+1.Download ParamSearchSetup.sh and scheduler.sh
+2.Move both files into your AraSim directory
+3.Do $chmod u+x ParamSearchSetup.sh and $chmod u+x scheduler.sh
+
+######CONFIGURE#######
+1.Open ParamSearchSetup.sh
+2.On line 5, change PCON003 to you group computing name, or remove the whole line.
+3.On line 9, specify the location of your AraSim directory
+4.On line 10, name the parameter space search
+5.On line 11, specify the number if processors per node on your cluster
+6.On lines 15-89, edit the setup.txt parameters that you want to keep constant for every run
+7.On line 15-89, edit the setup.txt parameters that you want to vary by making the parameter equal to a variable.
+     EX. 	  input1="EXPONENT=$E"
+     		  input49="number_of_stations=$S"
+8.On line 99, replace Var1 with one of the variables you specified in the previous step. Specify a range and interval to vary the parameter by.
+     EX.     	  for E in {15..20..1}
+9.On line 101-102, replace Var1Name$Var1 with the variable you specified in the previous step.
+     EX.     	  mkdir Exponent$E
+     		  cd Exponent$E
+10.Repeat steps 8-9 for all 5 variables you want to vary on lines 99-122
+11.On line 127, replace the default variable names with the variables you are varying. 
+      Ex. 	  echo "Counter = $counter ; Exponent = $E ; ...etc
+12.Under line 130, redefine all varying parameters. These can be copied from lines 15-89.
+      Ex.     	  input1="EXPONENT=$E"
+                  input49="number_of_stations=$S"
+13.On line 139, replace the existing variable names with the ones you are varying
+      EX.  	  runDir=$runName'/'Exponent$E'/'NStations$S...etc
+14.On line 144, modify walltime of each run depending on your settings and cluster 
+15.On line 147, change PCON003 to you group computing name, or remove the whole line
+16.Save file
+17.Open sheduler.sh
+18.On line 3, specify the location of your AraSim directory
+19.On line 4, specify the name of the parameter space search. It should be the same name as in ParamSearchSetup.sh
+20.On lines 11-19, modify Var1-Var5 to the actual variable names and correct ranges to iterate over. These for loops should be identical to lines 99-122 in ParamSearchSetup.sh
+21.On line 21, replace the existing variable names with the ones you are varying
+      Ex.        echo "cd $runName'/'Exponent$E'/'NStations$S...etc
+22.On lines 34 and 39, replace cond0091 with your username for the cluster
+23.On lines 43, you can pick how many nodes you want to use at any given time. It is set to 10 intially. 
+24.Save File
+
+
+#######RUN#######
+1.Do $qsub ParamSearchSetup.sh
+2.Wait for ParamSearchSetup.sh to finish. This script is creating the setup files for all runs. This may take a couple minutes.
+3.When ParamSearchSetup.sh is done, there should be a new directory in your home directory. Move this directory to your AraSim directory.
+4.Do $screen to start a new screen that the scheduler can run on. This is incase you lose connection to the cluster mid run. 
+5.Do $./scheduler.sh to start script. This script automatically submits jobs and lets you see the status of the runs.
+6.The scheduler makes a text file of all jobs called jobList.txt in the ShelfMC dir. Make sure to delete jobList.txt before starting a whole new run.
+
+
+######RESULT#######
+1.When Completed, there will be a great amount of data in the run files.  
+2.The run directory is organized in tree, results for particular runs can be found by cd'ing deeper into the tree.
+3.In each run directory, there will be a resulting root file, all the setup files, and a log file for the run.
+
